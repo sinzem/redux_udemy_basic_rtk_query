@@ -1,5 +1,4 @@
-import { configureStore } from '@reduxjs/toolkit';
-import heroes from "../components/heroesList/heroesSlice"; 
+import { configureStore } from '@reduxjs/toolkit'; 
 import filters from "../components/heroesFilters/filtersSlice"; 
 import { apiSlice } from '../api/apiSlice';
 
@@ -13,8 +12,7 @@ const stringMiddleware = () => (next) => (action) => {
 }
 
 const store = configureStore({ 
-    reducer: {heroes,
-              filters,
+    reducer: {filters,
               [apiSlice.reducerPath]: apiSlice.reducer}, /* (подключаем редьюсер из apiSlice, путь генерируем динамически) */
     middleware: getDefaultMiddleware => getDefaultMiddleware().concat(
                                                                stringMiddleware, 

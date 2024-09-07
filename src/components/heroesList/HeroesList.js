@@ -1,9 +1,8 @@
-import {useHttp} from '../../hooks/http.hook';
-import { useEffect, useCallback, useMemo } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+
+import { useCallback, useMemo } from 'react';
+import { useSelector } from 'react-redux';
 import { CSSTransition, TransitionGroup} from 'react-transition-group';
-import { fetchHeroes, heroDeleted, filteredHeroesSelector } from './heroesSlice';
-import { useGetHeroesQuery } from '../../api/apiSlice';
+import { useGetHeroesQuery, useDeleteHeroMutation } from '../../api/apiSlice';
 
 import HeroesListItem from "../heroesListItem/HeroesListItem";
 import Spinner from '../spinner/Spinner';
@@ -21,12 +20,14 @@ const HeroesList = () => {
         isError, /* (true когда ошибка) */
         error, /* (сама ошибка) */
         refetch /* (функция для отправки запроса вручную) */
-    } = useGetHeroesQuery(); /* (деструктурируем возвращаемые хуком RTKQuery сущности) */
+    } = useGetHeroesQuery(); /* (деструктурируем возвращаемые хуком RTKQuery сущности, относительно этапов жизненного цикла - работает автоматически, в хуки useEffect и т.п не помещаем) */
+
+    const [deleteHero] = useDeleteHeroMutation(); /* (хук из RTKQuery для удаления персонажей(деструктурируем функцию из массива)) */
 
     const activeFilter = useSelector(state => state.filters.activeFilter);
 
     const filteredHeroes = useMemo(() => {
-        const filteredHeroes = heroes.slice();
+        const filteredHeroes = heroes.slice(); /* (для соблюдения иммутабельности копируем массив с героями) */
 
         if (activeFilter === "all") {
             return filteredHeroes;
@@ -35,22 +36,10 @@ const HeroesList = () => {
         }
     }, [heroes, activeFilter]);
 
-    const dispatch = useDispatch();
-    const {request} = useHttp();
-
-    useEffect(() => {
-      
-        dispatch(fetchHeroes()); 
-        // eslint-disable-next-line
-    }, []);
-
     const onDelete = useCallback((id) => {
-        request(`http://localhost:3001/heroes/${id}`, "DELETE")
-            .then(data => console.log(data, 'Deleted'))
-            .then(dispatch(heroDeleted(id)))
-            .catch(err => console.log(err));
+        deleteHero(id);
         // eslint-disable-next-line  
-    }, [request]);
+    }, []);
 
     if (isLoading || isFetching) {
         return <Spinner/>;
